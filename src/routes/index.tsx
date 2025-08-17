@@ -1,15 +1,18 @@
 import App from "@/App";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { role } from "@/constants/role";
 import Login from "@/pages/Authentication/Login";
 import Register from "@/pages/Authentication/Register";
 import Verify from "@/pages/Authentication/Verify";
 import About from "@/pages/homePages/About";
 import Home from "@/pages/homePages/Home";
-import ManageTour from "@/pages/User/ManageTour";
-import UserDashboard from "@/pages/User/UserDashboard";
+import Unauthorized from "@/pages/Unauthorized/Unauthorized";
+import type { TRole } from "@/types";
 import { generateRoutes } from "@/utils/generatedRoutes";
-import { createBrowserRouter } from "react-router";
+import { withAuth } from "@/utils/withAuth";
+import { createBrowserRouter, Navigate } from "react-router";
 import { adminSidebarItems } from "./adminSidebarItems";
+import { userSidebarItems } from "./userSidebarItems";
 
 export const router = createBrowserRouter([
   {
@@ -28,22 +31,19 @@ export const router = createBrowserRouter([
   },
 
   {
-    Component: DashboardLayout,
-    path: "admin",
-    children: [...generateRoutes(adminSidebarItems)],
+    Component: withAuth(DashboardLayout, role.superAdmin as TRole),
+    path: "/admin",
+    children: [
+      { index: true, element: <Navigate to="/admin/dashboard" /> },
+      ...generateRoutes(adminSidebarItems),
+    ],
   },
   {
-    Component: DashboardLayout,
-    path: "user",
+    Component: withAuth(DashboardLayout, role.user as TRole),
+    path: "/user",
     children: [
-      {
-        Component: UserDashboard,
-        path: "dashboard",
-      },
-      {
-        Component: ManageTour,
-        path: "manage-tour",
-      },
+      { index: true, element: <Navigate to="/user/dashboard" /> },
+      ...generateRoutes(userSidebarItems),
     ],
   },
 
@@ -58,5 +58,9 @@ export const router = createBrowserRouter([
   {
     Component: Verify,
     path: "/verify",
+  },
+  {
+    Component: Unauthorized,
+    path: "/unauthorized",
   },
 ]);
